@@ -3,9 +3,9 @@
    ============================================================ */
 
 let _currentArticle = null;
-let _rendering = false; /* guard against concurrent renders */
+let _rendering = false;
 
-/* ── Auto-render first article once config is ready ── */
+/* ── Wait for config then render first article ── */
 (function waitForCfg() {
   const cfg = window.__cfg;
   if (!cfg) { setTimeout(waitForCfg, 30); return; }
@@ -20,14 +20,13 @@ let _rendering = false; /* guard against concurrent renders */
   renderArticle(target);
 })();
 
-
-/* ── Handle browser back/forward ── */
+/* ── Browser back/forward ── */
 window.addEventListener('popstate', () => {
   const cfg = window.__cfg;
   if (!cfg) return;
   const hashId = decodeURIComponent(location.hash.slice(1));
   const article = cfg.articles?.find(a => a.id === hashId);
-  if (article) { renderArticle(article); activateSidebarItem(article.id); }
+  if (article) { _rendering = false; renderArticle(article); activateSidebarItem(article.id); }
 });
 
 
@@ -43,15 +42,12 @@ async function renderArticle(article) {
   const content = document.getElementById('article-content');
   if (!content) { _rendering = false; return; }
 
-  /* Update URL hash */
   const encoded = encodeURIComponent(article.id);
   if (location.hash !== '#' + encoded) history.pushState(null, '', '#' + encoded);
 
-  /* Update page title */
   const title = lang === 'ru' ? article.titleRu : article.titleEn;
   document.title = `${title} — ${window.__cfg?.site?.project || 'Wiki'}`;
 
-  /* Loading state */
   content.innerHTML = `<div class="wiki-loading">
     <div class="wiki-loading-dot"></div>
     <div class="wiki-loading-dot"></div>
@@ -59,7 +55,6 @@ async function renderArticle(article) {
   </div>`;
 
   try {
-    /* Home is built-in — no fetch needed */
     if (article.id === 'home') {
       content.innerHTML = buildHomePage(lang);
       content.scrollTo({ top: 0, behavior: 'smooth' });
@@ -82,8 +77,7 @@ async function renderArticle(article) {
 
     if (article.splitLang) md = extractLangSection(md, lang);
 
-    const html = markdownToHtml(md);
-    content.innerHTML = `<div class="wiki-body reveal">${html}</div>`;
+    content.innerHTML = `<div class="wiki-body reveal">${markdownToHtml(md)}</div>`;
     content.scrollTo({ top: 0, behavior: 'smooth' });
     highlightCode(content);
 
@@ -95,21 +89,15 @@ async function renderArticle(article) {
   _rendering = false;
 }
 
-
-/* ── Re-render in new language (called by lang.js) ── */
+/* ── Re-render on language switch (called by lang.js) ── */
 function rerenderCurrentLang(lang) {
   syncLangButtons(lang);
-
-  /* Update sidebar .t elements */
   document.querySelectorAll('#article-list .t').forEach(el => {
     const val = el.getAttribute('data-' + lang);
     if (val !== null) el.textContent = val;
   });
-
   if (!_currentArticle) return;
-
-  _rendering = false; /* allow re-render */
-
+  _rendering = false;
   const content = document.getElementById('article-content');
   const body = content?.querySelector('.wiki-body');
   if (body) {
@@ -123,7 +111,7 @@ function rerenderCurrentLang(lang) {
 
 
 /* ════════════════════════════════════════════════════════════
-   HOME PAGE (built-in)
+   HOME PAGE
    ════════════════════════════════════════════════════════════ */
 function buildHomePage(lang) {
   const project = window.__cfg?.site?.project || 'Zenjex';
@@ -178,129 +166,143 @@ function navigateTo(id) {
 
 /* ════════════════════════════════════════════════════════════
    MARKDOWN → HTML
-   Processes the document line by line. Each branch MUST
-   advance `i` by at least 1 to prevent infinite loops.
+   Strategy: first extract all fenced code blocks and replace
+   them with safe placeholders, then parse the remaining text
+   line-by-line (no pipes inside code blocks can confuse the
+   table detector), then restore the code blocks at the end.
    ════════════════════════════════════════════════════════════ */
 function markdownToHtml(md) {
   /* Strip wiki-internal language switcher line */
   md = md.replace(/^>\s+\*\*Language[^\n]*\n?/m, '');
 
+  /* ── Phase 1: extract fenced code blocks into placeholders ── */
+  const codeBlocks = [];
+  md = md.replace(/^```([^\n]*)\n([\s\S]*?)^```\s*$/gm, (_, lang, code) => {
+    const idx = codeBlocks.length;
+    codeBlocks.push({ lang: lang.trim(), code });
+    return `\x00CODE${idx}\x00`;
+  });
+
+  /* ── Phase 2: parse line by line ── */
   const lines = md.split('\n');
-  const out = [];
+  const out   = [];
   let i = 0;
 
   while (i < lines.length) {
     const line = lines[i];
 
-    /* ── Fenced code block ── */
-    if (line.startsWith('```')) {
-      const lang = line.slice(3).trim();
-      const codeLines = [];
-      i++; /* skip opening fence */
-      while (i < lines.length && !lines[i].startsWith('```')) {
-        codeLines.push(escHtml(lines[i]));
-        i++;
-      }
-      i++; /* skip closing fence */
-      out.push(`<pre><code class="language-${escHtml(lang)}">${codeLines.join('\n')}</code></pre>`);
+    /* Code block placeholder */
+    if (/^\x00CODE\d+\x00$/.test(line.trim())) {
+      const idx = parseInt(line.match(/\d+/)[0]);
+      const { lang, code } = codeBlocks[idx];
+      out.push(`<pre><code class="language-${escHtml(lang)}">${escHtml(code.replace(/\n$/, ''))}</code></pre>`);
+      i++;
       continue;
     }
 
-    /* ── Heading ── */
-    const hMatch = line.match(/^(#{1,4})\s+(.+)/);
-    if (hMatch) {
-      const level = hMatch[1].length;
-      const text  = inlineToHtml(hMatch[2]);
-      const slug  = hMatch[2].toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+    /* Heading */
+    const hm = line.match(/^(#{1,4}) (.+)/);
+    if (hm) {
+      const level = hm[1].length;
+      const text  = inlineToHtml(hm[2]);
+      const slug  = hm[2].toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
       out.push(`<h${level} id="${slug}">${text}</h${level}>`);
-      i++;
-      continue;
+      i++; continue;
     }
 
-    /* ── Horizontal rule ── */
-    if (/^---+\s*$/.test(line)) {
+    /* Horizontal rule */
+    if (/^-{3,}\s*$/.test(line)) {
       out.push('<hr>');
-      i++;
-      continue;
+      i++; continue;
     }
 
-    /* ── Blockquote ── */
+    /* Blockquote */
     if (line.startsWith('> ')) {
-      const bqLines = [];
-      while (i < lines.length && lines[i].startsWith('> ')) {
-        bqLines.push(lines[i].slice(2));
-        i++;
-      }
-      out.push(`<blockquote><p>${inlineToHtml(bqLines.join(' '))}</p></blockquote>`);
+      const bq = [];
+      while (i < lines.length && lines[i].startsWith('> ')) { bq.push(lines[i].slice(2)); i++; }
+      out.push(`<blockquote><p>${inlineToHtml(bq.join(' '))}</p></blockquote>`);
       continue;
     }
 
-    /* ── Table: only if this line AND next line look like a table ── */
-    if (line.includes('|') && i + 1 < lines.length && /^\|?[\s\-:|]+\|/.test(lines[i + 1])) {
-      const tableLines = [];
-      while (i < lines.length && lines[i].includes('|')) {
-        tableLines.push(lines[i]);
-        i++;
+    /* Table — only when next non-empty line is a separator row */
+    if (looksLikeTableRow(line)) {
+      /* Find the separator line (skip blanks) */
+      let sepIdx = i + 1;
+      while (sepIdx < lines.length && lines[sepIdx].trim() === '') sepIdx++;
+      if (sepIdx < lines.length && isTableSeparator(lines[sepIdx])) {
+        const tableLines = [];
+        while (i < lines.length && looksLikeTableRow(lines[i])) {
+          tableLines.push(lines[i]);
+          i++;
+        }
+        out.push(buildTable(tableLines));
+        continue;
       }
-      out.push(buildTable(tableLines));
-      continue;
     }
 
-    /* ── Unordered list ── */
+    /* Unordered list */
     if (/^[ \t]*[-*+] /.test(line)) {
-      const listLines = [];
-      while (i < lines.length && /^[ \t]*[-*+] /.test(lines[i])) {
-        listLines.push(lines[i]);
-        i++;
-      }
-      out.push(buildList(listLines, false));
+      const lst = [];
+      while (i < lines.length && /^[ \t]*[-*+] /.test(lines[i])) { lst.push(lines[i]); i++; }
+      out.push(buildList(lst, false));
       continue;
     }
 
-    /* ── Ordered list ── */
+    /* Ordered list */
     if (/^\d+\. /.test(line)) {
-      const listLines = [];
-      while (i < lines.length && /^\d+\. /.test(lines[i])) {
-        listLines.push(lines[i]);
-        i++;
-      }
-      out.push(buildList(listLines, true));
+      const lst = [];
+      while (i < lines.length && /^\d+\. /.test(lines[i])) { lst.push(lines[i]); i++; }
+      out.push(buildList(lst, true));
       continue;
     }
 
-    /* ── Empty line ── */
-    if (line.trim() === '') {
-      i++;
-      continue;
-    }
+    /* Empty line */
+    if (line.trim() === '') { i++; continue; }
 
-    /* ── Paragraph: collect until a blank line or block-level element ── */
-    const paraLines = [];
+    /* Paragraph — collect until blank or block element */
+    const para = [];
     while (i < lines.length) {
       const l = lines[i];
-      if (
-        l.trim() === '' ||
-        l.startsWith('#') ||
-        l.startsWith('```') ||
-        l.startsWith('> ') ||
-        /^[ \t]*[-*+] /.test(l) ||
-        /^\d+\. /.test(l) ||
-        /^---+\s*$/.test(l) ||
-        /* table: current line is a pipe AND next is separator */
-        (l.includes('|') && i + 1 < lines.length && /^\|?[\s\-:|]+\|/.test(lines[i + 1]))
-      ) break;
-      paraLines.push(l);
+      if (isBlockStart(l, i, lines)) break;
+      para.push(l);
       i++;
     }
-    if (paraLines.length) {
-      out.push(`<p>${inlineToHtml(paraLines.join(' '))}</p>`);
-    }
+    if (para.length) out.push(`<p>${inlineToHtml(para.join(' '))}</p>`);
   }
 
   return out.join('\n');
 }
 
+/* ── Table detection helpers ── */
+function looksLikeTableRow(line) {
+  /* A real table row starts and ends with | or has multiple | */
+  return /^\|.+\|/.test(line.trim()) || (line.includes('|') && /^\|/.test(line.trim()));
+}
+
+function isTableSeparator(line) {
+  return /^\|?[\s\-:|]+\|[\s\-:|]*$/.test(line.trim()) && line.includes('-');
+}
+
+/* ── Block-level start detector (for paragraph termination) ── */
+function isBlockStart(line, i, lines) {
+  if (line.trim() === '') return true;
+  if (/^#{1,4} /.test(line)) return true;
+  if (/^-{3,}\s*$/.test(line)) return true;
+  if (line.startsWith('> ')) return true;
+  if (/^[ \t]*[-*+] /.test(line)) return true;
+  if (/^\d+\. /.test(line)) return true;
+  if (/^\x00CODE\d+\x00$/.test(line.trim())) return true;
+  /* Only treat as table-start if followed by separator */
+  if (looksLikeTableRow(line)) {
+    let sep = i + 1;
+    while (sep < lines.length && lines[sep].trim() === '') sep++;
+    if (sep < lines.length && isTableSeparator(lines[sep])) return true;
+  }
+  return false;
+}
+
 function inlineToHtml(text) {
+  /* Restore code block placeholders as inline code (shouldn't happen but safety) */
   return text
     .replace(/`([^`]+)`/g, (_, c) => `<code>${escHtml(c)}</code>`)
     .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
@@ -312,10 +314,9 @@ function inlineToHtml(text) {
 }
 
 function buildTable(lines) {
-  const dataRows = lines.filter(l => !/^\|?[\s\-:|]+\|/.test(l) || l.replace(/[\s\-:|]/g,'').length > 2);
-  const rows = dataRows.map(l =>
-    l.replace(/^\|/, '').replace(/\|$/, '').split('|').map(c => c.trim())
-  );
+  const rows = lines
+    .filter(l => !isTableSeparator(l))
+    .map(l => l.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map(c => c.trim()));
   if (!rows.length) return '';
   const [head, ...body] = rows;
   const ths = head.map(c => `<th>${inlineToHtml(c)}</th>`).join('');
@@ -324,28 +325,24 @@ function buildTable(lines) {
 }
 
 function buildList(lines, ordered) {
-  const tag = ordered ? 'ol' : 'ul';
+  const tag   = ordered ? 'ol' : 'ul';
   const items = lines
-    .map(l => inlineToHtml(l.replace(/^[ \t]*[-*+\d.]+\s/, '')))
-    .map(t => `<li>${t}</li>`)
+    .map(l => l.replace(/^[ \t]*[-*+\d.]+\s/, ''))
+    .map(t => `<li>${inlineToHtml(t)}</li>`)
     .join('');
   return `<${tag}>${items}</${tag}>`;
 }
 
 
 /* ════════════════════════════════════════════════════════════
-   LANGUAGE SECTION EXTRACTOR (README.md has EN + RU blocks)
+   LANGUAGE SECTION EXTRACTOR (README.md)
    ════════════════════════════════════════════════════════════ */
 function extractLangSection(md, lang) {
   const enIdx = md.search(/^## English\s*$/m);
   const ruIdx = md.search(/^## Русский\s*$/m);
   if (enIdx === -1 || ruIdx === -1) return md;
-
-  if (lang === 'ru') {
-    return md.slice(md.indexOf('\n', ruIdx) + 1).trim();
-  } else {
-    return md.slice(md.indexOf('\n', enIdx) + 1, ruIdx).trim();
-  }
+  if (lang === 'ru') return md.slice(md.indexOf('\n', ruIdx) + 1).trim();
+  return md.slice(md.indexOf('\n', enIdx) + 1, ruIdx).trim();
 }
 
 
@@ -362,27 +359,16 @@ function highlightCode(container) {
 }
 
 function highlightCSharp(code) {
-  /* Order matters: escape HTML first, then apply spans */
   let s = escHtml(code);
-
-  /* strings (before keywords) */
-  s = s.replace(/(&quot;[^&]*(?:&[^;]+;[^&]*)*&quot;)/g,
-    '<span class="hl-str">$1</span>');
-
-  /* line comments */
-  s = s.replace(/(\/\/[^\n]*)/g,
-    '<span class="hl-comment">$1</span>');
-
-  /* keywords (only outside already-marked spans) */
-  const kw = /\b(public|private|protected|internal|static|abstract|override|virtual|sealed|readonly|const|new|class|interface|namespace|using|return|void|bool|int|string|float|double|var|null|true|false|this|base|typeof|if|else|for|foreach|while|yield|async|await|get|set|in|out|ref|params|where|event|delegate|partial|struct|enum|operator)\b/g;
-  s = s.replace(kw, (m, _, offset, str) => {
-    /* Skip if inside an existing span */
-    const before = str.slice(0, offset);
-    const openCount  = (before.match(/<span/g) || []).length;
+  s = s.replace(/(&quot;(?:[^&]|&(?!quot;))*&quot;)/g, '<span class="hl-str">$1</span>');
+  s = s.replace(/(\/\/[^\n]*)/g, '<span class="hl-comment">$1</span>');
+  const kwRe = /\b(public|private|protected|internal|static|abstract|override|virtual|sealed|readonly|const|new|class|interface|namespace|using|return|void|bool|int|string|float|double|var|null|true|false|this|base|typeof|if|else|for|foreach|while|yield|async|await|get|set|in|out|ref|params|where|event|delegate|partial|struct|enum|operator)\b/g;
+  s = s.replace(kwRe, (m, _, offset, str) => {
+    const before     = str.slice(0, offset);
+    const openCount  = (before.match(/<span/g)  || []).length;
     const closeCount = (before.match(/<\/span>/g) || []).length;
     return openCount > closeCount ? m : `<span class="hl-kw">${m}</span>`;
   });
-
   return s;
 }
 

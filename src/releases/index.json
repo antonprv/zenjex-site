@@ -1,0 +1,8 @@
+{
+  "_doc": "List all release files here. Loader fetches them in parallel and sorts by semver automatically.",
+  "files": [
+    "v3.2.0.json",
+    "v2.6.0.json",
+    "v1.8.0.json"
+  ]
+}

@@ -1,21 +1,24 @@
 /* ============================================================
-   config-loader.js — Loads config.json and bootstraps the site.
+   config-loader.js — Loads config.json, fetches release files
+                      from releasesDir, and bootstraps the site.
 
    Load order (index.html):
      theme.js → config-loader.js → lang.js → app.js → scroll.js
 
    Steps:
      1. Fetch config.json
-     2. Apply accent colours (same logic as portfolio)
+     2. Apply accent colours
      3. Apply noise texture
      4. Inject custom font
      5. Patch page meta (title, topbar)
-     6. Render sidebar version list
-     7. Hand off to app.js via window.__cfg
+     6. Load all release .json files from releasesDir
+     7. Sort releases by semver (newest first)
+     8. Hand off to app.js via window.__cfg
    ============================================================ */
 
 (async function bootstrap() {
 
+  /* ── 1. Load config.json ── */
   let cfg;
   try {
     const res = await fetch('config.json');
@@ -26,19 +29,100 @@
     return;
   }
 
-  window.__cfg = cfg;
-
   applyAccentColors(cfg.theme);
   applyNoise(cfg.noise);
   if (cfg.font?.files?.length || cfg.font?.path) injectFont(cfg.font);
   patchMeta(cfg.site);
-  renderSidebar(cfg.releases);
+
+  /* ── 2. Load releases from releasesDir ── */
+  const releasesDir = cfg.releasesDir || 'releases';
+  let releases = {};
+
+  try {
+    releases = await loadReleases(releasesDir);
+  } catch (err) {
+    console.error('[config-loader] Failed to load releases:', err);
+  }
+
+  cfg.releases = releases;
+  window.__cfg  = cfg;
+
+  renderSidebar(releases);
 
 })();
 
 
 /* ════════════════════════════════════════════════════════════
-   ACCENT COLORS  (identical to portfolio's config-loader.js)
+   RELEASE LOADER
+   Fetches an index file listing all release filenames, then
+   loads each .json in parallel, and sorts by semver descending.
+
+   Convention: releasesDir/index.json contains { "files": ["v3.2.0.json", ...] }
+   ════════════════════════════════════════════════════════════ */
+async function loadReleases(dir) {
+  /* Fetch the index listing */
+  const indexRes = await fetch(`${dir}/index.json`);
+  if (!indexRes.ok) throw new Error(`Cannot load ${dir}/index.json — HTTP ${indexRes.status}`);
+  const index = await indexRes.json();
+
+  if (!Array.isArray(index.files) || !index.files.length) {
+    console.warn('[config-loader] releases index is empty or malformed');
+    return {};
+  }
+
+  /* Fetch all release files in parallel */
+  const results = await Promise.allSettled(
+    index.files.map(async filename => {
+      const res = await fetch(`${dir}/${filename}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status} — ${filename}`);
+      return res.json();
+    })
+  );
+
+  /* Collect successful results, warn on failures */
+  const releases = [];
+  results.forEach((result, i) => {
+    if (result.status === 'fulfilled') {
+      releases.push(result.value);
+    } else {
+      console.warn(`[config-loader] Skipped ${index.files[i]}:`, result.reason);
+    }
+  });
+
+  /* Sort by semver descending (newest first) */
+  releases.sort((a, b) => compareSemver(b.version, a.version));
+
+  /* Convert array → ordered object keyed by version tag */
+  const ordered = {};
+  releases.forEach(r => { ordered[r.version] = r; });
+  return ordered;
+}
+
+
+/* ════════════════════════════════════════════════════════════
+   SEMVER COMPARATOR
+   Parses "v1.2.3" or "1.2.3" → [major, minor, patch]
+   Returns negative / 0 / positive like Array.sort expects.
+   ════════════════════════════════════════════════════════════ */
+function parseSemver(v) {
+  const clean = String(v).replace(/^v/i, '');
+  const parts = clean.split('.').map(n => parseInt(n, 10) || 0);
+  while (parts.length < 3) parts.push(0);
+  return parts;
+}
+
+function compareSemver(a, b) {
+  const pa = parseSemver(a);
+  const pb = parseSemver(b);
+  for (let i = 0; i < 3; i++) {
+    if (pa[i] !== pb[i]) return pa[i] - pb[i];
+  }
+  return 0;
+}
+
+
+/* ════════════════════════════════════════════════════════════
+   ACCENT COLORS
    ════════════════════════════════════════════════════════════ */
 function applyAccentColors({ accentDark, accentLight } = {}) {
   const root = document.documentElement.style;
@@ -72,7 +156,7 @@ function hexToRgba(hex, alpha) {
 
 
 /* ════════════════════════════════════════════════════════════
-   NOISE  (identical to portfolio)
+   NOISE
    ════════════════════════════════════════════════════════════ */
 function applyNoise({ frequency = 0.65, octaves = 1 } = {}) {
   const svg = [
@@ -90,7 +174,7 @@ function applyNoise({ frequency = 0.65, octaves = 1 } = {}) {
 
 
 /* ════════════════════════════════════════════════════════════
-   FONT  (identical logic to portfolio)
+   FONT
    ════════════════════════════════════════════════════════════ */
 function injectFont(fontCfg) {
   const { family, fallback } = fontCfg;
@@ -108,7 +192,7 @@ function injectFont(fontCfg) {
 function buildFontFace(family, { path, weight, variable }) {
   const isVar = variable !== undefined
     ? Boolean(variable)
-    : /variable|-vf|[\s_\-]var[\s_.\-]|VF\./i.test(path);
+    : /variable|-vf|[\s_\-]var[\s_.\\-]|VF\./i.test(path);
 
   const NAMES = {
     thin:100, hairline:100, extralight:200, light:300,
@@ -139,24 +223,19 @@ function buildFontFace(family, { path, weight, variable }) {
    META
    ════════════════════════════════════════════════════════════ */
 function patchMeta(site = {}) {
-  /* Topbar project name */
   const nameEl = document.getElementById('topbar-project');
-  if (nameEl && site.project) {
-    nameEl.textContent = site.project;
-  }
+  if (nameEl && site.project) nameEl.textContent = site.project;
 
-  /* GitHub link */
   const repoEl = document.getElementById('repo-link');
   if (repoEl) {
-    if (site.repoUrl) { repoEl.href = site.repoUrl; }
-    else              { repoEl.style.display = 'none'; }
+    if (site.repoUrl) repoEl.href = site.repoUrl;
+    else              repoEl.style.display = 'none';
   }
 
-  /* Portfolio back-link */
   const backEl = document.getElementById('portfolio-link');
   if (backEl) {
-    if (site.portfolioUrl) { backEl.href = site.portfolioUrl; }
-    else                   { backEl.style.display = 'none'; }
+    if (site.portfolioUrl) backEl.href = site.portfolioUrl;
+    else                   backEl.style.display = 'none';
   }
 }
 
@@ -187,7 +266,6 @@ function renderSidebar(releases = {}) {
       document.querySelectorAll('.version-item').forEach(el => el.classList.remove('active'));
       li.classList.add('active');
       if (typeof renderRelease === 'function') renderRelease(tag, data);
-      /* Close mobile sidebar */
       document.getElementById('sidebar')?.classList.remove('open');
       document.getElementById('sidebar-backdrop')?.classList.remove('open');
     });
@@ -198,7 +276,7 @@ function renderSidebar(releases = {}) {
 }
 
 
-/* ── Date formatter ── */
+/* ── Helpers ── */
 function formatDate(iso) {
   if (!iso) return '';
   try {

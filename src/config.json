@@ -5,29 +5,33 @@
     "project":    "Zenjex",
     "descRu":     "Changelog",
     "descEn":     "Changelog",
-    "repoUrl":    "https://github.com/username/zenjex",
+    "repoUrl":    "https://github.com/antonprv/Zenjex",
     "portfolioUrl": "../"
   },
 
   "theme": {
-    "accentDark":  "#847271",
-    "accentLight": "#a67c52"
+    "accentDark":  "#4ccbad",
+    "accentLight": "#4c3eaf"
   },
 
-  "noise": { "frequency": 0.65, "octaves": 1 },
+  "noise": {
+    "frequency": 0.65,
+    "octaves":   1
+  },
 
   "font": {
-    "family":   "MTSans",
+    "family":   "TikTokSans",
     "fallback": "system-ui, sans-serif",
     "files": [
-      { "path": "fonts/MTSans-LightCondensed.woff2",   "weight": 300 },
-      { "path": "fonts/MTSans-RegularCondensed.woff2", "weight": 400 },
-      { "path": "fonts/MTSans-BoldCondensed.woff2",    "weight": 700 }
+      {
+        "path": "fonts/TikTokSans.woff2",
+        "variable": true
+      }
     ]
   },
 
   "releases": {
-    "v1.2.0": {
+    "v3.2.0": {
       "date": "2026-03-13",
       "ru": [
         {
@@ -187,7 +191,7 @@
       ]
     },
 
-    "v1.1.0": {
+    "v2.6.0": {
       "date": "2026-01-20",
       "ru": [
         {
@@ -263,7 +267,7 @@
       ]
     },
 
-    "v1.0.0": {
+    "v1.8.0": {
       "date": "2025-11-05",
       "ru": [
         {

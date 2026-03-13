@@ -1,5 +1,5 @@
 {
-  "_doc": "Changelog config. Each release is a separate .json file in the releasesDir folder.",
+  "_doc": "Changelog config. Releases are stored in versioned subfolders under releasesDir.",
 
   "site": {
     "project":    "Zenjex",

@@ -108,7 +108,7 @@ function rerenderCurrentLang(lang) {
 
 function buildHeader(tag, data) {
   const wrap = document.createElement('div');
-  wrap.className = 'release-header reveal';
+  wrap.className = 'release-header reveal' + (data.major ? ' release-header--major' : '');
 
   /* Version number — split at "v" for accent colouring */
   const h1 = document.createElement('h1');

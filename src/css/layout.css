@@ -342,3 +342,145 @@ footer {
   .repo-link:hover  { transform: none; }
   .version-btn:hover { background: transparent; }
 }
+
+
+/* ════════════════════════════════════════════════════════════
+   SIDEBAR — версионные группы
+   ════════════════════════════════════════════════════════════ */
+
+/* Группа мажорной версии */
+.version-group {
+  margin-bottom: 0.25rem;
+}
+
+/* Лейбл группы (V3, V2, V1) */
+.version-group-label {
+  font-size: 0.55rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--accent);
+  opacity: 0.55;
+  padding: 0.9rem 1.3rem 0.3rem;
+  user-select: none;
+}
+
+/* Список релизов внутри группы */
+.version-sublist {
+  list-style: none;
+}
+
+/* Минорный релиз — чуть меньше и с отступом */
+.version-item:not(.version-item--major) .version-btn {
+  padding: 0.38rem 1.3rem 0.38rem 1.8rem;
+}
+
+.version-item:not(.version-item--major) .version-btn-tag {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.version-item:not(.version-item--major).active .version-btn-tag {
+  color: var(--accent);
+}
+
+.version-item:not(.version-item--major) .version-btn-date {
+  font-size: 0.6rem;
+}
+
+/* Мажорный релиз — крупнее, ярче */
+.version-item--major .version-btn {
+  padding: 0.55rem 1.3rem;
+}
+
+.version-item--major .version-btn-tag {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.version-item--major.active .version-btn-tag {
+  color: var(--accent);
+}
+
+/* Цветная точка перед мажорной версией */
+.version-btn-major-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+  opacity: 0.75;
+  transition: opacity 0.2s;
+}
+.version-item--major.active .version-btn-major-dot,
+.version-item--major .version-btn:hover .version-btn-major-dot {
+  opacity: 1;
+}
+
+/* Разделительная линия перед группой (кроме первой) */
+.version-group + .version-group .version-group-label {
+  border-top: 1px solid var(--border);
+  padding-top: 1rem;
+}
+
+
+/* ════════════════════════════════════════════════════════════
+   CONTENT — мажорный релиз
+   ════════════════════════════════════════════════════════════ */
+
+/* Выделенный бэкграунд для шапки мажорного релиза */
+.release-header--major {
+  position: relative;
+  padding: 1.8rem 2rem 1.8rem;
+  margin: -0.8rem -1.2rem 0;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, var(--border));
+  background: color-mix(in srgb, var(--accent) 5%, var(--card));
+  overflow: hidden;
+}
+
+/* Декоративное свечение в углу */
+.release-header--major::before {
+  content: '';
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent) 18%, transparent), transparent 70%);
+  pointer-events: none;
+}
+
+/* Бейдж "MAJOR RELEASE" */
+.release-header--major::after {
+  content: 'MAJOR RELEASE';
+  position: absolute;
+  top: 1rem;
+  right: 1.2rem;
+  font-size: 0.52rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--accent);
+  opacity: 0.6;
+}
+
+/* Версионный тег крупнее у мажора */
+.release-header--major .release-version-tag {
+  font-size: clamp(2.4rem, 6vw, 3.4rem);
+}
+
+@media (max-width: 768px) {
+  .release-header--major {
+    margin: -0.4rem -0.4rem 0;
+    padding: 1.4rem 1.2rem 1.4rem;
+  }
+  .release-header--major::after {
+    display: none;
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "version": "v1.0.0",
+  "date": "2025-09-12",
+  "major": true,
+  "ru": [
+    {
+      "type": "new",
+      "title": "Ядро фреймворка",
+      "items": [
+        "`ProjectRootInstaller` — абстрактная точка входа с порядком выполнения `-280`. Содержит три абстрактных метода: `InstallBindings(builder)`, `InstallGameInstanceRoutine()`, `LaunchGame()`.",
+        "`RootContainer` — статическое свойство `ProjectRootInstaller.RootContainer`, хранит построенный глобальный контейнер.",
+        "`RootContext` — статическая обёртка: `Runtime` (псевдоним контейнера), `HasInstance`, `Resolve<T>()`, `Resolve(Type)`.",
+        "`[Zenjex]` атрибут — помечает поля, свойства и методы для инъекции. Аналог `[Inject]`, поддерживает все три члена класса."
+      ]
+    },
+    {
+      "type": "new",
+      "title": "Fluent API биндингов",
+      "items": [
+        "`BindingBuilder<T>` — fluent API в стиле Zenject. Точка входа: `builder.Bind<T>()` и `builder.BindInstance<T>(instance)`.",
+        "Модификаторы источника: `.To<TConcrete>()`, `.FromInstance(instance)`.",
+        "Контрактные модификаторы: `.BindInterfaces()`, `.BindInterfacesAndSelf()`.",
+        "Терминаторы: `.AsSingle()` / `.AsSingleton()`, `.AsTransient()`.",
+        "`ContainerBindingBuilder<T>` — аналогичный fluent API для пост-инициализационных биндингов на живом `Container`."
+      ]
+    },
+    {
+      "type": "new",
+      "title": "Инъектор и базовый класс",
+      "items": [
+        "`ZenjexInjector` — ядро инъекции. Резолвит все `[Zenjex]`-члены объекта из `RootContext`. Обрабатывает поля, свойства и методы.",
+        "`ZenjexBehaviour` — базовый `MonoBehaviour` с порядком `-100`. Гарантирует инъекцию строго до `OnAwake()`, вызывает `ZenjexRunner.MarkInjected()` чтобы исключить повторную инъекцию."
+      ]
+    },
+    {
+      "type": "new",
+      "title": "ZenjexRunner — оркестратор инъекций",
+      "items": [
+        "Pass 1 (`OnContainerReady`): обходит все загруженные сцены и инъецирует объекты сразу после построения контейнера, внутри `Awake()` при порядке `-280`.",
+        "Pass 2 (`OnGameLaunched`): повторный проход после завершения `InstallGameInstanceRoutine()` — подхватывает объекты, зависящие от поздних биндингов.",
+        "Отслеживает уже инъецированные объекты через `HashSet<int>` по `GetInstanceID()` — исключает двойную инъекцию."
+      ]
+    }
+  ],
+  "en": [
+    {
+      "type": "new",
+      "title": "Framework core",
+      "items": [
+        "`ProjectRootInstaller` — abstract composition root at execution order `-280`. Defines three abstract members: `InstallBindings(builder)`, `InstallGameInstanceRoutine()`, `LaunchGame()`.",
+        "`RootContainer` — static property on `ProjectRootInstaller` holding the built global container.",
+        "`RootContext` — thin static wrapper: `Runtime` (container alias), `HasInstance`, `Resolve<T>()`, `Resolve(Type)`.",
+        "`[Zenjex]` attribute — marks fields, properties, and methods for injection. Drop-in for `[Inject]`, supports all three member kinds."
+      ]
+    },
+    {
+      "type": "new",
+      "title": "Fluent binding API",
+      "items": [
+        "`BindingBuilder<T>` — Zenject-style fluent API. Entry points: `builder.Bind<T>()` and `builder.BindInstance<T>(instance)`.",
+        "Source modifiers: `.To<TConcrete>()`, `.FromInstance(instance)`.",
+        "Contract modifiers: `.BindInterfaces()`, `.BindInterfacesAndSelf()`.",
+        "Terminators: `.AsSingle()` / `.AsSingleton()`, `.AsTransient()`.",
+        "`ContainerBindingBuilder<T>` — same fluent API for post-initialization bindings on a live `Container`."
+      ]
+    },
+    {
+      "type": "new",
+      "title": "Injector and base class",
+      "items": [
+        "`ZenjexInjector` — injection core. Resolves all `[Zenjex]`-marked members from `RootContext`. Handles fields, properties, and methods.",
+        "`ZenjexBehaviour` — base `MonoBehaviour` at order `-100`. Guarantees injection strictly before `OnAwake()`, calls `ZenjexRunner.MarkInjected()` to prevent double injection."
+      ]
+    },
+    {
+      "type": "new",
+      "title": "ZenjexRunner — injection orchestrator",
+      "items": [
+        "Pass 1 (`OnContainerReady`): walks all loaded scenes and injects objects immediately after container build, inside `Awake()` at order `-280`.",
+        "Pass 2 (`OnGameLaunched`): second pass after `InstallGameInstanceRoutine()` completes — catches objects depending on late bindings.",
+        "Tracks already-injected objects via `HashSet<int>` by `GetInstanceID()` to prevent double injection."
+      ]
+    }
+  ]
+}

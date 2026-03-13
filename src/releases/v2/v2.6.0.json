@@ -1,0 +1,46 @@
+{
+  "version": "v2.6.0",
+  "date": "2026-01-20",
+  "ru": [
+    {
+      "type": "new",
+      "title": "IInitializable",
+      "items": [
+        "Новый интерфейс, аналог `IInitializable` из Zenject.",
+        "Сервисы, реализующие его, получают вызов `Initialize()` после `InstallGameInstanceRoutine()`, но до `LaunchGame()`.",
+        "Биндинг должен явно выставлять `IInitializable` как контракт через `.BindInterfaces()` или `.BindInterfacesAndSelf()` — иначе сервис не будет обнаружен.",
+        "Ошибки в `Initialize()` логируются через `Debug.LogError` без прерывания загрузки."
+      ]
+    },
+    {
+      "type": "changed",
+      "title": "ProjectRootInstaller — поддержка IInitializable",
+      "items": [
+        "`LateInitRoutine()` дополнен шагом `CallInitializables(RootContainer)` между `InstallGameInstanceRoutine()` и `LaunchGame()`.",
+        "Вызов выполняется только если в контейнере есть биндинг `IInitializable` (проверка через `HasBinding<IInitializable>()`).",
+        "Итерация через `container.All<IInitializable>()` — поддерживает несколько реализаций одного интерфейса."
+      ]
+    }
+  ],
+  "en": [
+    {
+      "type": "new",
+      "title": "IInitializable",
+      "items": [
+        "New interface, a drop-in replacement for Zenject's `IInitializable`.",
+        "Services that implement it receive an `Initialize()` call after `InstallGameInstanceRoutine()`, but before `LaunchGame()`.",
+        "The binding must expose `IInitializable` as a contract via `.BindInterfaces()` or `.BindInterfacesAndSelf()` — otherwise the service won't be discovered.",
+        "Errors in `Initialize()` are logged via `Debug.LogError` without interrupting the boot sequence."
+      ]
+    },
+    {
+      "type": "changed",
+      "title": "ProjectRootInstaller — IInitializable support",
+      "items": [
+        "`LateInitRoutine()` gains a `CallInitializables(RootContainer)` step between `InstallGameInstanceRoutine()` and `LaunchGame()`.",
+        "The call is only made if the container has a binding for `IInitializable` (checked via `HasBinding<IInitializable>()`).",
+        "Iteration via `container.All<IInitializable>()` — supports multiple implementations of the same interface."
+      ]
+    }
+  ]
+}

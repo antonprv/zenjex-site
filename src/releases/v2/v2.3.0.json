@@ -1,0 +1,60 @@
+{
+  "version": "v2.3.0",
+  "date": "2026-01-02",
+  "ru": [
+    {
+      "type": "new",
+      "title": "ReflexDebuggerWindow — вкладка Zenjex",
+      "items": [
+        "В существующее окно `Window / Analysis / Reflex Debugger` добавлена вкладка **Zenjex** рядом с вкладкой Reflex.",
+        "Левая панель (260 px) — список уникальных типов с числом инъекций; поиск по имени типа.",
+        "Правая панель — детали выбранного типа: `GoName`, `SceneName`, `Pass`, подсветка `IsLate` оранжевым через `ZenjexStyles.LateColor`.",
+        "Окно подписывается на `ZenjexRunner.OnStateChanged` и обновляется в реальном времени во время Play Mode."
+      ]
+    },
+    {
+      "type": "new",
+      "title": "ZenjexStyles — стили EditorWindow",
+      "items": [
+        "Новый внутренний класс `ZenjexStyles` с ленивой инициализацией стилей: `RichLabel`, `RowEven`, `RowOdd`, `RowSelected`.",
+        "`StatusGreen`, `StatusGray`, `StatusWarning` — цветные стили для статусных строк.",
+        "`NormalColor` и `LateColor` — константы цветов строк записей (серый / оранжевый)."
+      ]
+    },
+    {
+      "type": "fixed",
+      "title": "ZenjexBehaviour — предупреждение при раннем Awake",
+      "items": [
+        "Если `RootContext.HasInstance` возвращает `false` в момент `Awake()`, теперь выводится `LogWarning` с подсказкой проверить Script Execution Order вместо молчаливого пропуска инъекции."
+      ]
+    }
+  ],
+  "en": [
+    {
+      "type": "new",
+      "title": "ReflexDebuggerWindow — Zenjex tab",
+      "items": [
+        "A **Zenjex** tab added to the existing `Window / Analysis / Reflex Debugger` window, alongside the Reflex tab.",
+        "Left panel (260 px) — list of unique injected types with injection count; filterable by type name.",
+        "Right panel — details for the selected type: `GoName`, `SceneName`, `Pass`, `IsLate` rows highlighted in orange via `ZenjexStyles.LateColor`.",
+        "The window subscribes to `ZenjexRunner.OnStateChanged` and refreshes in real time during Play Mode."
+      ]
+    },
+    {
+      "type": "new",
+      "title": "ZenjexStyles — EditorWindow styles",
+      "items": [
+        "New internal `ZenjexStyles` class with lazily initialized styles: `RichLabel`, `RowEven`, `RowOdd`, `RowSelected`.",
+        "`StatusGreen`, `StatusGray`, `StatusWarning` — coloured styles for status rows.",
+        "`NormalColor` and `LateColor` — row colour constants for injection records (grey / orange)."
+      ]
+    },
+    {
+      "type": "fixed",
+      "title": "ZenjexBehaviour — warning on early Awake",
+      "items": [
+        "If `RootContext.HasInstance` returns `false` at `Awake()` time, a `LogWarning` is now emitted with a hint to check Script Execution Order, instead of silently skipping injection."
+      ]
+    }
+  ]
+}

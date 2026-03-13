@@ -1,0 +1,64 @@
+{
+  "version": "v1.4.0",
+  "date": "2025-10-03",
+  "ru": [
+    {
+      "type": "new",
+      "title": "ZenjexInjector — кэш рефлексии",
+      "items": [
+        "Добавлен `Dictionary<Type, TypeZenjexInfo>` — кэш рефлексии, строящийся лениво при первом обращении к типу.",
+        "`TypeZenjexInfo` хранит три массива: `FieldInfo[]`, `PropertyInfo[]`, `MethodInfo[]`.",
+        "Кэш обходит всю цепочку наследования вверх до `object`, собирая `[Zenjex]`-члены с флагом `DeclaredOnly` на каждом уровне.",
+        "`HasZenjexMembers(Type)` — быстрая предварительная проверка без аллокаций; `ZenjexRunner` использует её чтобы пропустить `MonoBehaviour`-объекты без `[Zenjex]`-членов."
+      ]
+    },
+    {
+      "type": "new",
+      "title": "BindingBuilder — NonLazy и AsScoped",
+      "items": [
+        "`.NonLazy()` — eager singleton; в Zenject это `.AsSingle().NonLazy()`, теперь самостоятельный терминатор.",
+        "`.AsEagerSingleton()` — псевдоним для `.NonLazy()`.",
+        "`.AsScoped()` — один экземпляр на саб-контейнер, эквивалентно `.CopyIntoDirectSubContainers().AsSingle()`.",
+        "Добавлена защита: попытка создать `Transient + Eager` биндинг бросает `InvalidOperationException`."
+      ]
+    },
+    {
+      "type": "changed",
+      "title": "ZenjexBehaviour — порядок выполнения",
+      "items": [
+        "Порядок выполнения изменён с `-50` на `-100` для надёжного опережения пользовательских `Awake()` во всех сценариях.",
+        "`ZenjexRunner.MarkInjected(this)` вызывается в `Awake()` до `OnAwake()` — базовую реализацию вызывать не нужно."
+      ]
+    }
+  ],
+  "en": [
+    {
+      "type": "new",
+      "title": "ZenjexInjector — reflection cache",
+      "items": [
+        "Added `Dictionary<Type, TypeZenjexInfo>` — a reflection cache built lazily on first access for a given type.",
+        "`TypeZenjexInfo` holds three arrays: `FieldInfo[]`, `PropertyInfo[]`, `MethodInfo[]`.",
+        "Cache walks the full inheritance chain up to `object`, collecting `[Zenjex]` members with `DeclaredOnly` at each level.",
+        "`HasZenjexMembers(Type)` — allocation-free pre-check; used by `ZenjexRunner` to skip `MonoBehaviour` objects without `[Zenjex]` members."
+      ]
+    },
+    {
+      "type": "new",
+      "title": "BindingBuilder — NonLazy and AsScoped",
+      "items": [
+        "`.NonLazy()` — eager singleton; Zenject's `.AsSingle().NonLazy()` is now a standalone terminator.",
+        "`.AsEagerSingleton()` — alias for `.NonLazy()`.",
+        "`.AsScoped()` — one instance per sub-container, equivalent to `.CopyIntoDirectSubContainers().AsSingle()`.",
+        "Added guard: attempting a `Transient + Eager` binding now throws `InvalidOperationException`."
+      ]
+    },
+    {
+      "type": "changed",
+      "title": "ZenjexBehaviour — execution order",
+      "items": [
+        "Execution order changed from `-50` to `-100` to reliably precede user `Awake()` calls in all scenarios.",
+        "`ZenjexRunner.MarkInjected(this)` is called in `Awake()` before `OnAwake()` — no need to call the base implementation."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "version": "v3.2.0",
+  "date": "2026-03-13",
+  "ru": [
+    {
+      "type": "new",
+      "title": "BindingBuilder — ReflexZenjectExtensions",
+      "items": [
+        "`builder.Bind<T>()` и `builder.BindInstance<T>(instance)` — точки входа в fluent API, добавленные как extension methods на `ContainerBuilder` через `ReflexZenjectExtensions`.",
+        "`ContainerZenjectExtensions` — аналогичный extension для живого `Container`: `container.Bind<T>()` возвращает `ContainerBindingBuilder<T>`."
+      ]
+    },
+    {
+      "type": "changed",
+      "title": "ProjectRootInstaller — порядок выполнения",
+      "items": [
+        "Порядок выполнения изменён с `-200` на `-280` — предшествует `SceneInstaller` (`-200`) и всем остальным `ZenjexBehaviour` (`-100`).",
+        "Добавлена защита от повторного `Awake()`: `if (RootContainer != null) return;` — актуально при Reload Domain = false."
+      ]
+    },
+    {
+      "type": "changed",
+      "title": "ZenjexRunner — инициализация через RuntimeInitializeOnLoadMethod",
+      "items": [
+        "`Initialize()` помечен `[RuntimeInitializeOnLoadMethod(BeforeSceneLoad)]` — гарантирует сброс состояния (`_injected`, `InjectedRecords`, `_launched`) до загрузки любой сцены.",
+        "Подписка на `OnContainerReady`, `OnGameLaunched` и `SceneManager.sceneLoaded` также перенесена в этот метод для корректного переподключения при повторном запуске в Editor."
+      ]
+    }
+  ],
+  "en": [
+    {
+      "type": "new",
+      "title": "BindingBuilder — ReflexZenjectExtensions",
+      "items": [
+        "`builder.Bind<T>()` and `builder.BindInstance<T>(instance)` — fluent API entry points added as extension methods on `ContainerBuilder` via `ReflexZenjectExtensions`.",
+        "`ContainerZenjectExtensions` — equivalent extension for a live `Container`: `container.Bind<T>()` returns `ContainerBindingBuilder<T>`."
+      ]
+    },
+    {
+      "type": "changed",
+      "title": "ProjectRootInstaller — execution order",
+      "items": [
+        "Execution order changed from `-200` to `-280` — now precedes `SceneInstaller` (`-200`) and all `ZenjexBehaviour` instances (`-100`).",
+        "Added double-Awake guard: `if (RootContainer != null) return;` — relevant when Reload Domain = false."
+      ]
+    },
+    {
+      "type": "changed",
+      "title": "ZenjexRunner — RuntimeInitializeOnLoadMethod bootstrap",
+      "items": [
+        "`Initialize()` is decorated with `[RuntimeInitializeOnLoadMethod(BeforeSceneLoad)]` — guarantees state reset (`_injected`, `InjectedRecords`, `_launched`) before any scene loads.",
+        "Subscriptions to `OnContainerReady`, `OnGameLaunched`, and `SceneManager.sceneLoaded` are also moved here for correct re-wiring on repeated Play Mode entry in the Editor."
+      ]
+    }
+  ]
+}

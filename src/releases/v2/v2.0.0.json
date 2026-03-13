@@ -1,0 +1,87 @@
+{
+  "version": "v2.0.0",
+  "date": "2025-12-10",
+  "major": true,
+  "ru": [
+    {
+      "type": "new",
+      "title": "ZenjexRunner — Pass 3 и ручная инъекция",
+      "items": [
+        "Pass 3 (`SceneManager.sceneLoaded`): покрывает аддитивно загруженные сцены после запуска. Работает после их `Awake()` — выдаёт предупреждение `ZNX-LATE` для обычных `MonoBehaviour`.",
+        "`InjectGameObject(go)` — ручная инъекция после `Instantiate()`. До `LaunchGame()` пропускается с предупреждением.",
+        "`ZenjexRunner.IsReady` (`bool`) — `true` после срабатывания `OnGameLaunched`.",
+        "`ZenjexRunner.OnStateChanged` (`event Action`) — срабатывает после каждого прохода и каждого `InjectGameObject()`."
+      ]
+    },
+    {
+      "type": "new",
+      "title": "InjectedRecords — журнал инъекций",
+      "items": [
+        "`InjectedRecord` — запись об одной инъекции: `TypeName`, `GoName`, `SceneName`, `Pass` (`InjectionPass`), `IsLate`.",
+        "`ZenjexRunner.InjectedRecords` — публичный `List<InjectedRecord>`, доступный из EditorWindow и Development Build.",
+        "`InjectionPass` — перечисление с пятью значениями: `ContainerReady`, `GameLaunched`, `SceneLoaded`, `Manual`, `ZenjexBehaviour`."
+      ]
+    },
+    {
+      "type": "new",
+      "title": "BindingBuilder — FromComponentInNewPrefab",
+      "items": [
+        "`.FromComponentInNewPrefab(prefab)` — инстанцирует префаб при первом резолве и возвращает компонент нужного типа. Всегда `Singleton + Lazy`.",
+        "`.WithGameObjectName(name)` — переименовывает корневой `GameObject` после инстанциации.",
+        "`.UnderTransformGroup(groupName)` — помещает префаб под именованную группу в корне сцены; группа создаётся автоматически, если отсутствует.",
+        "`.UnderTransform(parent)` — помещает под конкретный `Transform`. Если вызваны оба — побеждает последний.",
+        "Реализован поиск компонента: сначала `GetComponent`, затем `GetComponentInChildren` — с подробной ошибкой при отсутствии."
+      ]
+    },
+    {
+      "type": "new",
+      "title": "ContainerBuilder — eager резолв Scoped-биндингов",
+      "items": [
+        "`Build()` теперь немедленно резолвит унаследованные от родителя `Scoped + Eager`-биндинги в новый дочерний контейнер.",
+        "Механизм реализован через `Parent.ResolversByContract`: после построения контейнера собираются все унаследованные резолверы с `Lifetime.Scoped + Resolution.Eager` и резолвятся в дочернем контексте.",
+        "Обеспечивает корректную работу `.CopyIntoDirectSubContainers().NonLazy()` внутри `SceneInstaller`."
+      ]
+    }
+  ],
+  "en": [
+    {
+      "type": "new",
+      "title": "ZenjexRunner — Pass 3 and manual injection",
+      "items": [
+        "Pass 3 (`SceneManager.sceneLoaded`): covers additively loaded scenes after launch. Runs after their `Awake()` — emits a `ZNX-LATE` warning for plain `MonoBehaviour` classes.",
+        "`InjectGameObject(go)` — manual injection after `Instantiate()`. Skips with a warning before `LaunchGame()`.",
+        "`ZenjexRunner.IsReady` (`bool`) — `true` once `OnGameLaunched` has fired.",
+        "`ZenjexRunner.OnStateChanged` (`event Action`) — fires after every pass and every `InjectGameObject()` call."
+      ]
+    },
+    {
+      "type": "new",
+      "title": "InjectedRecords — injection log",
+      "items": [
+        "`InjectedRecord` — a single injection record: `TypeName`, `GoName`, `SceneName`, `Pass` (`InjectionPass`), `IsLate`.",
+        "`ZenjexRunner.InjectedRecords` — public `List<InjectedRecord>` accessible from EditorWindow and Development Build.",
+        "`InjectionPass` — enum with five values: `ContainerReady`, `GameLaunched`, `SceneLoaded`, `Manual`, `ZenjexBehaviour`."
+      ]
+    },
+    {
+      "type": "new",
+      "title": "BindingBuilder — FromComponentInNewPrefab",
+      "items": [
+        "`.FromComponentInNewPrefab(prefab)` — instantiates a prefab on first resolve and returns a component of the target type. Always `Singleton + Lazy`.",
+        "`.WithGameObjectName(name)` — renames the root `GameObject` after instantiation.",
+        "`.UnderTransformGroup(groupName)` — places the prefab under a named group at the scene root; group is created automatically if absent.",
+        "`.UnderTransform(parent)` — places under a specific `Transform`. If both are called, the last one wins.",
+        "Component search: first `GetComponent`, then `GetComponentInChildren` — with a detailed error if not found."
+      ]
+    },
+    {
+      "type": "new",
+      "title": "ContainerBuilder — eager Scoped binding resolution",
+      "items": [
+        "`Build()` now immediately resolves inherited `Scoped + Eager` bindings from the parent into the new child container.",
+        "Implemented via `Parent.ResolversByContract`: after building, all inherited resolvers with `Lifetime.Scoped + Resolution.Eager` are collected and resolved in the child context.",
+        "Makes `.CopyIntoDirectSubContainers().NonLazy()` work correctly inside `SceneInstaller`."
+      ]
+    }
+  ]
+}

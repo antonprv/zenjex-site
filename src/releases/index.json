@@ -1,8 +1,4 @@
 {
-  "_doc": "List all release files here. Loader fetches them in parallel and sorts by semver automatically.",
-  "files": [
-    "v3.2.0.json",
-    "v2.6.0.json",
-    "v1.8.0.json"
-  ]
+  "_doc": "List of version folders. Each folder has its own index.json with release files inside.",
+  "versions": ["v3", "v2", "v1"]
 }

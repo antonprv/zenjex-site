@@ -1,0 +1,64 @@
+{
+  "version": "v1.8.0",
+  "date": "2025-11-05",
+  "ru": [
+    {
+      "type": "new",
+      "title": "BindingBuilder — WithArguments",
+      "items": [
+        "`.WithArguments(params object[] args)` — явные аргументы конструктора, минуя контейнер. Аналог Zenject's `.WithArguments()`.",
+        "Сопоставление по типу: каждый аргумент подбирается к параметру конструктора через `IsAssignableFrom`. Непоставленные параметры резолвятся из контейнера.",
+        "Выбирает конструктор с наибольшим числом параметров — поведение идентично стратегии Reflex (`TypeConstructionInfoCache`).",
+        "При ошибке конструирования бросает `InvalidOperationException` с подробным сообщением о несовпадении типов."
+      ]
+    },
+    {
+      "type": "new",
+      "title": "BindingBuilder — FromComponentInHierarchy",
+      "items": [
+        "`.FromComponentInHierarchy(includeInactive = true)` — резолвит биндинг, находя существующий компонент в иерархии сцены.",
+        "Требует, чтобы тип поиска был подклассом `Component`; при несоответствии бросает `InvalidOperationException` с подсказкой вызвать `.To<Concrete>()`.",
+        "Всегда `Singleton + Lazy` — компонент ищется один раз при первом резолве."
+      ]
+    },
+    {
+      "type": "new",
+      "title": "BindingBuilder — CopyIntoDirectSubContainers",
+      "items": [
+        "`.CopyIntoDirectSubContainers()` — помечает биндинг как `Scoped`: свежий экземпляр создаётся в каждом дочернем контейнере.",
+        "Позволяет глобально зарегистрированному сервису получать и глобальные, и scene-local зависимости через конструктор.",
+        "Scoped-экземпляры уничтожаются вместе с дочерним контейнером при выгрузке сцены."
+      ]
+    }
+  ],
+  "en": [
+    {
+      "type": "new",
+      "title": "BindingBuilder — WithArguments",
+      "items": [
+        "`.WithArguments(params object[] args)` — explicit constructor arguments that bypass the container. Mirrors Zenject's `.WithArguments()`.",
+        "Type-matched: each argument is mapped to a constructor parameter via `IsAssignableFrom`. Unmatched parameters are resolved from the container.",
+        "Picks the constructor with the most parameters — identical to Reflex's strategy (`TypeConstructionInfoCache`).",
+        "Throws `InvalidOperationException` with a detailed message on construction failure."
+      ]
+    },
+    {
+      "type": "new",
+      "title": "BindingBuilder — FromComponentInHierarchy",
+      "items": [
+        "`.FromComponentInHierarchy(includeInactive = true)` — resolves the binding by finding an existing component in the scene hierarchy.",
+        "Requires the search type to be a `Component` subclass; throws `InvalidOperationException` with a hint to call `.To<Concrete>()` otherwise.",
+        "Always `Singleton + Lazy` — the component is searched once on first resolve."
+      ]
+    },
+    {
+      "type": "new",
+      "title": "BindingBuilder — CopyIntoDirectSubContainers",
+      "items": [
+        "`.CopyIntoDirectSubContainers()` — marks a binding as `Scoped`: a fresh instance is created inside each child container.",
+        "Allows a globally registered service to receive both global and scene-local dependencies via its constructor.",
+        "Scoped instances are disposed together with the child container on scene unload."
+      ]
+    }
+  ]
+}

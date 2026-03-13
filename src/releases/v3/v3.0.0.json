@@ -1,0 +1,73 @@
+{
+  "version": "v3.0.0",
+  "date": "2026-02-14",
+  "major": true,
+  "ru": [
+    {
+      "type": "new",
+      "title": "SceneInstaller",
+      "items": [
+        "Новый абстрактный `ZenjexBehaviour` с порядком `-200` — аналог `SceneContext` из Zenject. Размещается в каждой игровой сцене.",
+        "Создаёт дочерний контейнер через `RootContext.Runtime.Scope(InstallBindings)` — наследует все глобальные биндинги и добавляет scene-local поверх.",
+        "Регистрирует контейнер в `ZenjexSceneContext` при создании; снимает регистрацию и вызывает `Dispose()` при выгрузке сцены (`OnDestroy`).",
+        "Вызывает `IInitializable.Initialize()` на всех scene-scoped сервисах сразу после построения контейнера.",
+        "Публичное событие `OnSceneContainerReady` — срабатывает после инициализации, доступно для подписки из scene-level скриптов.",
+        "Виртуальный метод `OnInstalled()` — опциональная точка входа для scene-startup логики после сборки контейнера."
+      ]
+    },
+    {
+      "type": "new",
+      "title": "ZenjexSceneContext",
+      "items": [
+        "Статический реестр scene-scoped контейнеров. Хранит `Dictionary<int, Container>` с ключом `scene.handle`.",
+        "`Register(scene, container)` / `Unregister(scene)` — вызываются автоматически из `SceneInstaller`.",
+        "`GetActive()` — возвращает контейнер последней зарегистрированной сцены по `_lastRegisteredHandle`.",
+        "`Get(scene)` — возвращает контейнер конкретной сцены или `null`.",
+        "`Resolve<T>()` — резолвит из активного scene-контейнера; бросает с подробным сообщением если контейнер отсутствует.",
+        "`HasActiveScene` — `true`, если хотя бы один scene-контейнер зарегистрирован."
+      ]
+    },
+    {
+      "type": "changed",
+      "title": "ProjectRootInstaller — IInitializable в сценах",
+      "items": [
+        "`CallInitializables` вынесен в приватный статический метод и переиспользуется как в `ProjectRootInstaller`, так и в `SceneInstaller`.",
+        "Логика обнаружения через `HasBinding<IInitializable>()` и итерация `All<IInitializable>()` унифицированы для обоих уровней контейнеров."
+      ]
+    }
+  ],
+  "en": [
+    {
+      "type": "new",
+      "title": "SceneInstaller",
+      "items": [
+        "New abstract `ZenjexBehaviour` at order `-200` — Zenjex equivalent of Zenject's `SceneContext`. Place one per gameplay scene.",
+        "Creates a child container via `RootContext.Runtime.Scope(InstallBindings)` — inherits all global bindings and adds scene-local ones on top.",
+        "Registers the container with `ZenjexSceneContext` on creation; unregisters and calls `Dispose()` on scene unload (`OnDestroy`).",
+        "Calls `IInitializable.Initialize()` on all scene-scoped services immediately after container build.",
+        "Public `OnSceneContainerReady` event — fires after initialization, available for scene-level scripts to subscribe.",
+        "Virtual `OnInstalled()` method — optional hook for scene-startup logic after the container is built."
+      ]
+    },
+    {
+      "type": "new",
+      "title": "ZenjexSceneContext",
+      "items": [
+        "Static registry of scene-scoped containers. Stores `Dictionary<int, Container>` keyed by `scene.handle`.",
+        "`Register(scene, container)` / `Unregister(scene)` — called automatically by `SceneInstaller`.",
+        "`GetActive()` — returns the container for the most recently registered scene by `_lastRegisteredHandle`.",
+        "`Get(scene)` — returns the container for a specific scene, or `null`.",
+        "`Resolve<T>()` — resolves from the active scene container; throws with a detailed message if no container exists.",
+        "`HasActiveScene` — `true` if at least one scene container is currently registered."
+      ]
+    },
+    {
+      "type": "changed",
+      "title": "ProjectRootInstaller — IInitializable in scenes",
+      "items": [
+        "`CallInitializables` extracted into a private static method and reused in both `ProjectRootInstaller` and `SceneInstaller`.",
+        "Discovery logic via `HasBinding<IInitializable>()` and `All<IInitializable>()` iteration unified across both container levels."
+      ]
+    }
+  ]
+}

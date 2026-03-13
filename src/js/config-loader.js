@@ -1,19 +1,19 @@
 /* ============================================================
-   config-loader.js — Loads config.json, fetches release files
-                      from releasesDir, and bootstraps the site.
+   config-loader.js — Loads config.json, fetches all release
+   files from versioned subfolders, and bootstraps the site.
 
-   Load order (index.html):
-     theme.js → config-loader.js → lang.js → app.js → scroll.js
+   Folder structure:
+     releases/
+       index.json          ← { "versions": ["v3", "v2", "v1"] }
+       v3/
+         index.json        ← { "files": ["v3.0.0.json", "v3.2.0.json"] }
+         v3.0.0.json       ← { "version", "date", "major": true, "ru", "en" }
+         v3.2.0.json
+       v2/ ...
+       v1/ ...
 
-   Steps:
-     1. Fetch config.json
-     2. Apply accent colours
-     3. Apply noise texture
-     4. Inject custom font
-     5. Patch page meta (title, topbar)
-     6. Load all release .json files from releasesDir
-     7. Sort releases by semver (newest first)
-     8. Hand off to app.js via window.__cfg
+   Sorting: by semver descending within each major group.
+   Major releases (major: true) get special visual treatment.
    ============================================================ */
 
 (async function bootstrap() {
@@ -34,75 +34,96 @@
   if (cfg.font?.files?.length || cfg.font?.path) injectFont(cfg.font);
   patchMeta(cfg.site);
 
-  /* ── 2. Load releases from releasesDir ── */
+  /* ── 2. Load releases ── */
   const releasesDir = cfg.releasesDir || 'releases';
-  let releases = {};
+  let releaseGroups = [];
 
   try {
-    releases = await loadReleases(releasesDir);
+    releaseGroups = await loadReleaseGroups(releasesDir);
   } catch (err) {
     console.error('[config-loader] Failed to load releases:', err);
   }
 
-  cfg.releases = releases;
-  window.__cfg  = cfg;
+  /* Flat map for app.js compatibility: { [version]: data } */
+  const releases = {};
+  releaseGroups.forEach(group => {
+    group.releases.forEach(r => { releases[r.version] = r; });
+  });
 
-  renderSidebar(releases);
+  cfg.releases      = releases;
+  cfg.releaseGroups = releaseGroups;
+  window.__cfg      = cfg;
+
+  renderSidebar(releaseGroups);
 
 })();
 
 
 /* ════════════════════════════════════════════════════════════
    RELEASE LOADER
-   Fetches an index file listing all release filenames, then
-   loads each .json in parallel, and sorts by semver descending.
-
-   Convention: releasesDir/index.json contains { "files": ["v3.2.0.json", ...] }
+   Reads root index → for each version folder reads its index
+   → fetches all release files in parallel → sorts by semver
    ════════════════════════════════════════════════════════════ */
-async function loadReleases(dir) {
-  /* Fetch the index listing */
-  const indexRes = await fetch(`${dir}/index.json`);
-  if (!indexRes.ok) throw new Error(`Cannot load ${dir}/index.json — HTTP ${indexRes.status}`);
-  const index = await indexRes.json();
+async function loadReleaseGroups(dir) {
+  const rootRes = await fetch(`${dir}/index.json`);
+  if (!rootRes.ok) throw new Error(`Cannot load ${dir}/index.json — HTTP ${rootRes.status}`);
+  const rootIndex = await rootRes.json();
 
-  if (!Array.isArray(index.files) || !index.files.length) {
-    console.warn('[config-loader] releases index is empty or malformed');
-    return {};
-  }
+  const versionFolders = Array.isArray(rootIndex.versions) ? rootIndex.versions : [];
 
-  /* Fetch all release files in parallel */
+  /* Load each version group in parallel */
+  const groupResults = await Promise.allSettled(
+    versionFolders.map(folder => loadVersionGroup(dir, folder))
+  );
+
+  const groups = [];
+  groupResults.forEach((r, i) => {
+    if (r.status === 'fulfilled') {
+      groups.push(r.value);
+    } else {
+      console.warn(`[config-loader] Skipped folder ${versionFolders[i]}:`, r.reason);
+    }
+  });
+
+  /* Sort groups by their highest version descending */
+  groups.sort((a, b) => compareSemver(b.majorVersion, a.majorVersion));
+
+  return groups;
+}
+
+async function loadVersionGroup(dir, folder) {
+  const idxRes = await fetch(`${dir}/${folder}/index.json`);
+  if (!idxRes.ok) throw new Error(`Cannot load ${dir}/${folder}/index.json — HTTP ${idxRes.status}`);
+  const idx = await idxRes.json();
+
+  const files = Array.isArray(idx.files) ? idx.files : [];
+
   const results = await Promise.allSettled(
-    index.files.map(async filename => {
-      const res = await fetch(`${dir}/${filename}`);
+    files.map(async filename => {
+      const res = await fetch(`${dir}/${folder}/${filename}`);
       if (!res.ok) throw new Error(`HTTP ${res.status} — ${filename}`);
       return res.json();
     })
   );
 
-  /* Collect successful results, warn on failures */
   const releases = [];
-  results.forEach((result, i) => {
-    if (result.status === 'fulfilled') {
-      releases.push(result.value);
-    } else {
-      console.warn(`[config-loader] Skipped ${index.files[i]}:`, result.reason);
-    }
+  results.forEach((r, i) => {
+    if (r.status === 'fulfilled') releases.push(r.value);
+    else console.warn(`[config-loader] Skipped ${folder}/${files[i]}:`, r.reason);
   });
 
-  /* Sort by semver descending (newest first) */
+  /* Sort releases within group by semver descending */
   releases.sort((a, b) => compareSemver(b.version, a.version));
 
-  /* Convert array → ordered object keyed by version tag */
-  const ordered = {};
-  releases.forEach(r => { ordered[r.version] = r; });
-  return ordered;
+  /* Major version tag = first segment e.g. "v3" */
+  const majorVersion = folder;
+
+  return { majorVersion, releases };
 }
 
 
 /* ════════════════════════════════════════════════════════════
-   SEMVER COMPARATOR
-   Parses "v1.2.3" or "1.2.3" → [major, minor, patch]
-   Returns negative / 0 / positive like Array.sort expects.
+   SEMVER
    ════════════════════════════════════════════════════════════ */
 function parseSemver(v) {
   const clean = String(v).replace(/^v/i, '');
@@ -122,11 +143,82 @@ function compareSemver(a, b) {
 
 
 /* ════════════════════════════════════════════════════════════
+   SIDEBAR — grouped by major version
+   ════════════════════════════════════════════════════════════ */
+function renderSidebar(groups = []) {
+  const list = document.getElementById('version-list');
+  if (!list) return;
+  list.innerHTML = '';
+
+  let firstItem = true;
+
+  groups.forEach(group => {
+    /* ── Major version group header ── */
+    const groupEl = document.createElement('li');
+    groupEl.className = 'version-group';
+
+    const groupLabel = document.createElement('div');
+    groupLabel.className = 'version-group-label';
+    groupLabel.textContent = group.majorVersion.toUpperCase();
+    groupEl.appendChild(groupLabel);
+
+    /* ── Releases within group ── */
+    const subList = document.createElement('ul');
+    subList.className = 'version-sublist';
+
+    group.releases.forEach(data => {
+      const tag = data.version;
+      const isMajor = !!data.major;
+
+      const li = document.createElement('li');
+      li.className = 'version-item' +
+        (isMajor  ? ' version-item--major' : '') +
+        (firstItem ? ' active' : '');
+      li.dataset.version = tag;
+
+      const btn = document.createElement('button');
+      btn.className = 'version-btn';
+      btn.setAttribute('aria-label', `Version ${tag}`);
+
+      if (isMajor) {
+        btn.innerHTML = `
+          <span class="version-btn-tag">
+            <span class="version-btn-major-dot"></span>
+            ${escHtml(tag)}
+          </span>
+          <span class="version-btn-date">${formatDate(data.date)}</span>
+        `;
+      } else {
+        btn.innerHTML = `
+          <span class="version-btn-tag">${escHtml(tag)}</span>
+          <span class="version-btn-date">${formatDate(data.date)}</span>
+        `;
+      }
+
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.version-item').forEach(el => el.classList.remove('active'));
+        li.classList.add('active');
+        if (typeof renderRelease === 'function') renderRelease(tag, data);
+        document.getElementById('sidebar')?.classList.remove('open');
+        document.getElementById('sidebar-backdrop')?.classList.remove('open');
+      });
+
+      li.appendChild(btn);
+      subList.appendChild(li);
+      firstItem = false;
+    });
+
+    groupEl.appendChild(subList);
+    list.appendChild(groupEl);
+  });
+}
+
+
+/* ════════════════════════════════════════════════════════════
    ACCENT COLORS
    ════════════════════════════════════════════════════════════ */
 function applyAccentColors({ accentDark, accentLight } = {}) {
   const root = document.documentElement.style;
-
   if (accentDark)  root.setProperty('--accent-dark',  accentDark);
   if (accentLight) root.setProperty('--accent-light', accentLight);
 
@@ -237,42 +329,6 @@ function patchMeta(site = {}) {
     if (site.portfolioUrl) backEl.href = site.portfolioUrl;
     else                   backEl.style.display = 'none';
   }
-}
-
-
-/* ════════════════════════════════════════════════════════════
-   SIDEBAR VERSION LIST
-   ════════════════════════════════════════════════════════════ */
-function renderSidebar(releases = {}) {
-  const list = document.getElementById('version-list');
-  if (!list) return;
-
-  list.innerHTML = '';
-
-  Object.entries(releases).forEach(([tag, data], i) => {
-    const li = document.createElement('li');
-    li.className = 'version-item' + (i === 0 ? ' active' : '');
-    li.dataset.version = tag;
-
-    const btn = document.createElement('button');
-    btn.className = 'version-btn';
-    btn.setAttribute('aria-label', `Version ${tag}`);
-    btn.innerHTML = `
-      <span class="version-btn-tag">${escHtml(tag)}</span>
-      <span class="version-btn-date">${formatDate(data.date)}</span>
-    `;
-
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.version-item').forEach(el => el.classList.remove('active'));
-      li.classList.add('active');
-      if (typeof renderRelease === 'function') renderRelease(tag, data);
-      document.getElementById('sidebar')?.classList.remove('open');
-      document.getElementById('sidebar-backdrop')?.classList.remove('open');
-    });
-
-    li.appendChild(btn);
-    list.appendChild(li);
-  });
 }
 
 

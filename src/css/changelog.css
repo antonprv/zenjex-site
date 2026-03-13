@@ -1,0 +1,193 @@
+/* ============================================================
+   changelog.css — Release sections, badges, item lists,
+                   inline code highlighting
+   ============================================================ */
+
+/* ════════════════════════════════════════════════════════════
+   SECTION CARD
+   ════════════════════════════════════════════════════════════ */
+.release-section {
+  margin-bottom: 1.4rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card);
+  overflow: hidden;
+  transition: border-color 0.22s;
+}
+.release-section:hover {
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
+}
+
+/* ── Section header ── */
+.section-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.9rem 1.2rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.section-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+  flex: 1;
+}
+
+/* Inline code in titles */
+.section-title code {
+  font-family: 'SFMono-Regular', 'Consolas', 'Liberation Mono', monospace;
+  font-size: 0.85em;
+  font-weight: 600;
+  color: var(--accent2);
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.05em 0.35em;
+}
+
+/* ── Type badge ── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 0.22rem 0.6rem;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.badge-new {
+  color: #6ee7b7;
+  background: rgba(52, 211, 153, 0.08);
+  border-color: rgba(52, 211, 153, 0.2);
+}
+[data-theme="light"] .badge-new {
+  color: #065f46;
+  background: rgba(52, 211, 153, 0.12);
+  border-color: rgba(52, 211, 153, 0.3);
+}
+
+.badge-changed {
+  color: #fde68a;
+  background: rgba(251, 191, 36, 0.08);
+  border-color: rgba(251, 191, 36, 0.2);
+}
+[data-theme="light"] .badge-changed {
+  color: #78350f;
+  background: rgba(251, 191, 36, 0.12);
+  border-color: rgba(251, 191, 36, 0.3);
+}
+
+.badge-fixed {
+  color: #93c5fd;
+  background: rgba(96, 165, 250, 0.08);
+  border-color: rgba(96, 165, 250, 0.2);
+}
+[data-theme="light"] .badge-fixed {
+  color: #1e3a5f;
+  background: rgba(96, 165, 250, 0.12);
+  border-color: rgba(96, 165, 250, 0.3);
+}
+
+.badge-removed {
+  color: #fca5a5;
+  background: rgba(248, 113, 113, 0.08);
+  border-color: rgba(248, 113, 113, 0.2);
+}
+[data-theme="light"] .badge-removed {
+  color: #7f1d1d;
+  background: rgba(248, 113, 113, 0.12);
+  border-color: rgba(248, 113, 113, 0.3);
+}
+
+/* ── Item list ── */
+.section-items {
+  list-style: none;
+  padding: 0.6rem 0 0.6rem;
+}
+
+.section-item {
+  display: flex;
+  gap: 0.7rem;
+  padding: 0.4rem 1.2rem;
+  font-size: 0.85rem;
+  line-height: 1.65;
+  color: var(--muted);
+  transition: background 0.15s;
+}
+.section-item:hover {
+  background: color-mix(in srgb, var(--accent) 5%, transparent);
+}
+
+/* Bullet dot, coloured by type */
+.section-item::before {
+  content: '';
+  display: block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--muted);
+  margin-top: 0.55em;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+.release-section[data-type="new"]     .section-item::before { background: #34d399; }
+.release-section[data-type="changed"] .section-item::before { background: #fbbf24; }
+.release-section[data-type="fixed"]   .section-item::before { background: #60a5fa; }
+.release-section[data-type="removed"] .section-item::before { background: #f87171; }
+
+/* Inline code inside items */
+.section-item code {
+  font-family: 'SFMono-Regular', 'Consolas', 'Liberation Mono', monospace;
+  font-size: 0.82em;
+  font-weight: 500;
+  color: var(--accent2);
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.05em 0.35em;
+  white-space: nowrap;
+}
+
+[data-theme="light"] .section-item code {
+  color: var(--accent2);
+  background: color-mix(in srgb, var(--accent) 10%, var(--card));
+}
+
+/* ════════════════════════════════════════════════════════════
+   EMPTY STATE  (no release selected or config error)
+   ════════════════════════════════════════════════════════════ */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  min-height: 40vh;
+  color: var(--muted);
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+  text-align: center;
+  opacity: 0.6;
+}
+
+.empty-state svg {
+  color: var(--accent);
+  opacity: 0.4;
+}
+
+/* ════════════════════════════════════════════════════════════
+   MOBILE
+   ════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .section-head { padding: 0.8rem 1rem 0.65rem; gap: 0.6rem; }
+  .section-title { font-size: 0.88rem; }
+  .section-item { padding: 0.35rem 1rem; font-size: 0.8rem; }
+  .release-section { border-radius: 8px; margin-bottom: 1rem; }
+}

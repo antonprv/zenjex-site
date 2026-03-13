@@ -1,0 +1,80 @@
+/* ============================================================
+   variables.css — Design tokens, identical to portfolio
+   Accent colours are overridden at runtime by config-loader.js
+   ============================================================ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ── Fallback accents (before config loads) ── */
+:root {
+  --accent-dark:  #847271;
+  --accent-light: #a67c52;
+}
+
+/* ── Dark theme (default) ── */
+:root {
+  --accent:   var(--accent-dark);
+
+  --bg:       #0d0d0d;
+  --surface:  #161616;
+  --card:     #1c1c1c;
+  --accent2:  #e8d5a3;
+  --text:     #f0ece4;
+  --muted:    #8a8070;
+  --border:   var(--border-dark,          rgba(132, 114, 113, 0.18));
+  --glow:     var(--glow-dark,            rgba(132, 114, 113, 0.12));
+
+  --gradient-top:    var(--gradient-top-dark,  rgba(132, 114, 113, 0.15));
+  --gradient-bottom: var(--gradient-bot-dark,  rgba(132, 114, 113, 0.08));
+
+  --sidebar-w: 240px;
+}
+
+/* ── Light theme ── */
+[data-theme="light"] {
+  --accent:   var(--accent-light);
+
+  --bg:       #e8e6e1;
+  --surface:  #d9d7d2;
+  --card:     #cfcdbc;
+  --accent2:  #8b6f3a;
+  --text:     #1a1a1a;
+  --muted:    #4a4a4a;
+  --border:   var(--border-light,         rgba(166, 124, 82, 0.25));
+  --glow:     var(--glow-light,           rgba(166, 124, 82, 0.15));
+
+  --gradient-top:    var(--gradient-top-light, rgba(166, 124, 82, 0.18));
+  --gradient-bottom: var(--gradient-bot-light, rgba(166, 124, 82, 0.10));
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background-color:       var(--bg);
+  background-image:       var(--noise-svg);
+  background-attachment:  fixed;
+  color:       var(--text);
+  font-family: inherit;
+  font-weight: 300;
+  line-height: 1.7;
+  overflow-x:  hidden;
+}
+
+/* ── Same gradient overlay as portfolio ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    var(--gradient-top)    0%,
+    transparent            50%,
+    var(--gradient-bottom) 100%
+  );
+  pointer-events: none;
+  z-index: 9999;
+}

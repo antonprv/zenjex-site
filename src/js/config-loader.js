@@ -151,6 +151,7 @@ function renderSidebar(groups = []) {
   list.innerHTML = '';
 
   let firstItem = true;
+  const hashTag = decodeURIComponent(location.hash.slice(1));
 
   groups.forEach(group => {
     /* ── Major version group header ── */
@@ -171,9 +172,10 @@ function renderSidebar(groups = []) {
       const isMajor = !!data.major;
 
       const li = document.createElement('li');
+      const isActive = hashTag ? tag === hashTag : firstItem;
       li.className = 'version-item' +
-        (isMajor  ? ' version-item--major' : '') +
-        (firstItem ? ' active' : '');
+        (isMajor   ? ' version-item--major' : '') +
+        (isActive  ? ' active' : '');
       li.dataset.version = tag;
 
       const btn = document.createElement('button');

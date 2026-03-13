@@ -28,10 +28,25 @@ let _currentData = null;
   const lang = window.getCurrentLang?.() || 'ru';
   syncLangButtons(lang);
 
-  /* Render the first (newest) release */
-  const [tag, data] = entries[0];
-  renderRelease(tag, data);
+  /* Render version from URL hash, fallback to first (newest) */
+  const hashTag = decodeURIComponent(location.hash.slice(1));
+  const target = hashTag && cfg.releases[hashTag]
+    ? [hashTag, cfg.releases[hashTag]]
+    : entries[0];
+
+  renderRelease(target[0], target[1]);
 })();
+
+/* ── Handle browser back/forward navigation ── */
+window.addEventListener('popstate', () => {
+  const cfg = window.__cfg;
+  if (!cfg) return;
+  const hashTag = decodeURIComponent(location.hash.slice(1));
+  if (hashTag && cfg.releases[hashTag]) {
+    renderRelease(hashTag, cfg.releases[hashTag]);
+    activateSidebarItem(hashTag);
+  }
+});
 
 
 /* ════════════════════════════════════════════════════════════
@@ -40,6 +55,13 @@ let _currentData = null;
 function renderRelease(tag, data) {
   _currentTag  = tag;
   _currentData = data;
+
+  /* Update URL hash without pushing a new history entry on initial load,
+     but DO push when the user explicitly clicks a sidebar item. */
+  const encoded = encodeURIComponent(tag);
+  if (location.hash !== '#' + encoded) {
+    history.pushState(null, '', '#' + encoded);
+  }
 
   const lang     = window.getCurrentLang?.() || 'ru';
   const sections = data[lang] || data.ru || [];
@@ -246,4 +268,10 @@ function formatDateLong(iso) {
 function syncLangButtons(lang) {
   document.getElementById('btn-ru')?.classList.toggle('active', lang === 'ru');
   document.getElementById('btn-en')?.classList.toggle('active', lang === 'en');
+}
+
+function activateSidebarItem(tag) {
+  document.querySelectorAll('.version-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.version === tag);
+  });
 }

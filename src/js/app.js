@@ -166,7 +166,7 @@ function buildSection(sec) {
     sec.items.forEach(text => {
       const li = document.createElement('li');
       li.className = 'section-item';
-      li.innerHTML = renderInlineCode(text);
+      li.innerHTML = `<span class="section-item-text">${renderInlineCode(text)}</span>`;
       ul.appendChild(li);
     });
 

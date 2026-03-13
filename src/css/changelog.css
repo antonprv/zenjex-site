@@ -114,6 +114,7 @@
 
 .section-item {
   display: flex;
+  align-items: baseline;
   gap: 0.7rem;
   padding: 0.4rem 1.2rem;
   font-size: 0.85rem;
@@ -125,6 +126,12 @@
   background: color-mix(in srgb, var(--accent) 5%, transparent);
 }
 
+/* Text content wrapper */
+.section-item-text {
+  flex: 1;
+  min-width: 0;
+}
+
 /* Bullet dot, coloured by type */
 .section-item::before {
   content: '';
@@ -133,7 +140,7 @@
   height: 5px;
   border-radius: 50%;
   background: var(--muted);
-  margin-top: 0.55em;
+  margin-top: 0.6em;
   flex-shrink: 0;
   transition: background 0.2s;
 }

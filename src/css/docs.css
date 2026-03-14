@@ -320,3 +320,70 @@
   .doc-table th,
   .doc-table td  { padding: 0.45rem 0.75rem; }
 }
+
+/* ── Prev / Next page navigation ── */
+.doc-page-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.doc-nav-link {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.7rem 1rem;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  max-width: 48%;
+  transition: border-color 0.2s, background 0.2s;
+}
+.doc-nav-link:hover {
+  border-color: var(--accent);
+  background: var(--glow);
+}
+.doc-nav-link:last-child {
+  margin-left: auto;
+  text-align: right;
+}
+
+/* Label ("← Назад" / "Далее →") */
+.doc-nav-link > .t {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+/* Page title inside nav button */
+.doc-nav-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+@media (max-width: 600px) {
+  .doc-page-nav { flex-direction: column; }
+  .doc-nav-link { max-width: 100%; }
+  .doc-nav-link:last-child { margin-left: 0; }
+}
+
+/* Fragment wrapper — small top padding so first heading isn't flush to top */
+.doc-fragment {
+  padding-top: 0.2rem;
+}
+
+.doc-fragment .doc-heading--2:first-child,
+.doc-fragment .doc-heading--3:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}

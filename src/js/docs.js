@@ -46,19 +46,6 @@ async function renderDocPage(page) {
 
   content.innerHTML = '';
 
-  /* Page header */
-  const header = document.createElement('div');
-  header.className = 'doc-page-header reveal';
-  const h1 = document.createElement('h1');
-  h1.className = 'doc-page-title';
-  h1.textContent = lang === 'ru' ? page.titleRu : page.titleEn;
-  header.appendChild(h1);
-  content.appendChild(header);
-
-  const rule = document.createElement('div');
-  rule.className = 'release-rule';
-  content.appendChild(rule);
-
   /* Fetch and inject the HTML fragment */
   const docsDir = window.__cfg?.docsDir || 'docs';
   const url     = `${docsDir}/${page._cat}/${page.id}.html`;
@@ -111,10 +98,6 @@ function rerenderCurrentLang(lang) {
   });
 
   if (!_currentPage) return;
-
-  /* Update page title */
-  const h1 = document.querySelector('.doc-page-title');
-  if (h1) h1.textContent = lang === 'ru' ? _currentPage.titleRu : _currentPage.titleEn;
 
   /* Swap body blocks */
   const wrap = document.querySelector('.doc-fragment');

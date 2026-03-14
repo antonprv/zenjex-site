@@ -400,14 +400,14 @@
 }
 
 /* ── C# syntax highlighting ── */
-.doc-code-wrap code .hl-k { color: #4ccbad; }                   /* keywords   */
-.doc-code-wrap code .hl-t { color: #7dd3f0; }                   /* types      */
-.doc-code-wrap code .hl-s { color: #ce9178; }                   /* strings    */
-.doc-code-wrap code .hl-c { color: #6a9955; font-style: italic; } /* comments   */
-.doc-code-wrap code .hl-a { color: #dcdcaa; }                   /* attributes */
+.doc-code-wrap pre code .hl-k { color: #4ccbad !important; }
+.doc-code-wrap pre code .hl-t { color: #7dd3f0 !important; }
+.doc-code-wrap pre code .hl-s { color: #ce9178 !important; }
+.doc-code-wrap pre code .hl-c { color: #6a9955 !important; font-style: italic; }
+.doc-code-wrap pre code .hl-a { color: #dcdcaa !important; }
 
-[data-theme="light"] .doc-code-wrap code .hl-k { color: #0a6e5a; }
-[data-theme="light"] .doc-code-wrap code .hl-t { color: #1a6fa8; }
-[data-theme="light"] .doc-code-wrap code .hl-s { color: #a31515; }
-[data-theme="light"] .doc-code-wrap code .hl-c { color: #4a7c3f; }
-[data-theme="light"] .doc-code-wrap code .hl-a { color: #795e26; }
+[data-theme="light"] .doc-code-wrap pre code .hl-k { color: #0a6e5a !important; }
+[data-theme="light"] .doc-code-wrap pre code .hl-t { color: #1a6fa8 !important; }
+[data-theme="light"] .doc-code-wrap pre code .hl-s { color: #a31515 !important; }
+[data-theme="light"] .doc-code-wrap pre code .hl-c { color: #4a7c3f !important; }
+[data-theme="light"] .doc-code-wrap pre code .hl-a { color: #795e26 !important; }

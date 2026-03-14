@@ -23,7 +23,7 @@ function setLang(lang) {
   setTimeout(() => {
     els.forEach(el => {
       const val = el.getAttribute('data-' + lang);
-      if (val !== null) el.textContent = val;
+      if (val !== null) el.innerHTML = val;
       el.classList.remove('fading');
     });
   }, 180);

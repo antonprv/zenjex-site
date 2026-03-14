@@ -97,6 +97,14 @@
   line-height: 1.5;
 }
 
+/* Inside table cells, allow code to wrap */
+.doc-table th code,
+.doc-table td code {
+  white-space: normal;
+  display: inline;
+  word-break: break-all;
+}
+
 [data-theme="light"] .doc-paragraph code,
 [data-theme="light"] .doc-list-item code,
 [data-theme="light"] .doc-note-text code,
@@ -263,7 +271,6 @@
   margin: 0.8rem 0 1.2rem;
   border-radius: 10px;
   border: 1px solid var(--border);
-  overflow-x: auto;
   transition: border-color 0.22s;
 }
 .doc-table-wrap:hover {
@@ -283,7 +290,7 @@
   color: var(--text);
   background: var(--surface);
   border-bottom: 1px solid var(--border);
-  white-space: nowrap;
+  word-break: break-word;
 }
 
 .doc-table td {
@@ -291,6 +298,8 @@
   color: var(--muted);
   border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
   line-height: 1.55;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .doc-table tr:last-child td { border-bottom: none; }

@@ -18,9 +18,15 @@
   <!-- TOP BAR -->
   <header class="topbar">
     <div class="topbar-left">
-      <a class="topbar-logo" id="portfolio-link" href="#" aria-label="Back to portfolio">
-        <img class="topbar-logo-img" src="img/logo.png" alt="Zenjex" id="topbar-logo-img" />
-      </a>
+      <button class="theme-switcher" id="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">
+        <svg class="theme-icon sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <circle cx="12" cy="12" r="5"/>
+          <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+        </svg>
+        <svg class="theme-icon moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </button>
     </div>
 
     <div class="topbar-right">
@@ -57,16 +63,6 @@
         <button class="lang-btn active" id="btn-ru" onclick="setLang('ru')">RU</button>
         <button class="lang-btn"        id="btn-en" onclick="setLang('en')">EN</button>
       </div>
-
-      <button class="theme-switcher" id="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">
-        <svg class="theme-icon sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-          <circle cx="12" cy="12" r="5"/>
-          <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
-        </svg>
-        <svg class="theme-icon moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-        </svg>
-      </button>
     </div>
   </header>
 
@@ -75,13 +71,13 @@
 
     <!-- HERO -->
     <section class="home-hero">
-      <div class="home-hero-inner">
+      <div class="home-hero-inner home-hero-inner--centered">
 
         <div class="home-hero-logo-wrap">
           <img class="home-hero-logo" src="img/logo.png" alt="Zenjex" />
         </div>
 
-        <div class="home-hero-text">
+        <div class="home-hero-text home-hero-text--centered">
           <h1 class="home-tagline t" data-ru="Чистый DI для&nbsp;Unity." data-en="Clean DI for&nbsp;Unity.">Чистый DI для&nbsp;Unity.</h1>
           <p class="home-sub t"
              data-ru="Лёгкий, быстрый и предсказуемый фреймворк инъекции зависимостей для Unity, написанный поверх Reflex."
@@ -89,7 +85,7 @@
             Лёгкий, быстрый и предсказуемый фреймворк инъекции зависимостей для Unity, написанный поверх Reflex.
           </p>
 
-          <div class="home-cta-row">
+          <div class="home-cta-row home-cta-row--centered">
             <button class="home-btn-download" id="btn-download" onclick="downloadLatestRelease()">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
                 <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>

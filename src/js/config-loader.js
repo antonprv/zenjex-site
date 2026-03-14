@@ -317,8 +317,11 @@ function buildFontFace(family, { path, weight, variable }) {
    META
    ════════════════════════════════════════════════════════════ */
 function patchMeta(site = {}) {
+  // topbar-project may now be an <img> (logo) — skip text patching in that case
   const nameEl = document.getElementById('topbar-project');
-  if (nameEl && site.project) nameEl.textContent = site.project;
+  if (nameEl && site.project && nameEl.tagName !== 'IMG') {
+    nameEl.textContent = site.project;
+  }
 
   const repoEl = document.getElementById('repo-link');
   if (repoEl) {
@@ -329,7 +332,7 @@ function patchMeta(site = {}) {
   const backEl = document.getElementById('portfolio-link');
   if (backEl) {
     if (site.portfolioUrl) backEl.href = site.portfolioUrl;
-    else                   backEl.style.display = 'none';
+    // On pages with logo image, keep the home.html href set in HTML
   }
 }
 

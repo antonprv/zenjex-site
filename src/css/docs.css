@@ -398,3 +398,16 @@
 .doc-body {
   margin-top: 0;
 }
+
+/* ── C# syntax highlighting ── */
+.doc-code-wrap code .hl-k { color: #4ccbad; }                   /* keywords   */
+.doc-code-wrap code .hl-t { color: #7dd3f0; }                   /* types      */
+.doc-code-wrap code .hl-s { color: #ce9178; }                   /* strings    */
+.doc-code-wrap code .hl-c { color: #6a9955; font-style: italic; } /* comments   */
+.doc-code-wrap code .hl-a { color: #dcdcaa; }                   /* attributes */
+
+[data-theme="light"] .doc-code-wrap code .hl-k { color: #0a6e5a; }
+[data-theme="light"] .doc-code-wrap code .hl-t { color: #1a6fa8; }
+[data-theme="light"] .doc-code-wrap code .hl-s { color: #a31515; }
+[data-theme="light"] .doc-code-wrap code .hl-c { color: #4a7c3f; }
+[data-theme="light"] .doc-code-wrap code .hl-a { color: #795e26; }

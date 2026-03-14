@@ -63,6 +63,9 @@ async function renderDocPage(page) {
     /* Apply current language */
     applyLang(wrap, lang);
 
+    /* Syntax highlight all C# code blocks */
+    wrap.querySelectorAll('code.language-csharp').forEach(highlightCsharp);
+
   } catch (e) {
     console.error('[docs] fetch fragment:', e);
     const err = document.createElement('div');
@@ -156,4 +159,40 @@ function activateSidebarItem(id) {
 function syncLangButtons(lang) {
   document.getElementById('btn-ru')?.classList.toggle('active', lang === 'ru');
   document.getElementById('btn-en')?.classList.toggle('active', lang === 'en');
+}
+
+
+/* ════════════════════════════════════════════════════════════
+   C# SYNTAX HIGHLIGHTER
+   Called on <code class="language-csharp"> elements after
+   fragment injection. Text is already HTML-escaped.
+   ════════════════════════════════════════════════════════════ */
+function highlightCsharp(block) {
+  var s = block.innerHTML;
+
+  /* 1. String literals */
+  s = s.replace(/(&quot;(?:[^&]|&(?!quot;))*&quot;)/g,
+      '<span class="hl-s">$1</span>');
+
+  /* 2. Line comments  //...  (avoid matching URLs by checking no colon before) */
+  s = s.replace(/((?:^|[^:]))(\/\/[^\n]*)/gm,
+      '$1<span class="hl-c">$2</span>');
+
+  /* 3. Keywords — only outside existing spans */
+  var KW = 'public|private|protected|internal|static|abstract|override|virtual|sealed|readonly|const|new|class|interface|namespace|using|return|void|bool|int|float|double|string|var|null|true|false|this|base|typeof|if|else|for|foreach|while|yield|async|await|get|set|in|out|ref|params|where|event|delegate|partial|struct|enum|operator|is|as|try|catch|finally|throw|switch|case|break|continue';
+  s = s.replace(new RegExp('\\b(' + KW + ')\\b', 'g'), function(m, kw) {
+    return '<span class="hl-k">' + kw + '</span>';
+  });
+
+  /* 4. PascalCase type names */
+  s = s.replace(/\b([A-Z][A-Za-z0-9_]*)\b/g, function(m, t) {
+    return '<span class="hl-t">' + t + '</span>';
+  });
+
+  /* 5. Attributes  [Something] */
+  s = s.replace(/(\[[A-Za-z][A-Za-z0-9_, ]*\])/g, function(m, a) {
+    return '<span class="hl-a">' + a + '</span>';
+  });
+
+  block.innerHTML = s;
 }

@@ -297,12 +297,14 @@
 .doc-table:has(th:nth-child(4)) {
   table-layout: auto;
 }
+.doc-table:has(th:nth-child(4)) th:nth-child(1),
+.doc-table:has(th:nth-child(4)) td:nth-child(1) { width: 16%; }
 .doc-table:has(th:nth-child(4)) th:nth-child(2),
-.doc-table:has(th:nth-child(4)) td:nth-child(2) { width: 46%; }
+.doc-table:has(th:nth-child(4)) td:nth-child(2) { width: 42%; }
 .doc-table:has(th:nth-child(4)) th:nth-child(3),
-.doc-table:has(th:nth-child(4)) td:nth-child(3) { width: 18%; }
+.doc-table:has(th:nth-child(4)) td:nth-child(3) { width: 21%; }
 .doc-table:has(th:nth-child(4)) th:nth-child(4),
-.doc-table:has(th:nth-child(4)) td:nth-child(4) { width: 18%; }
+.doc-table:has(th:nth-child(4)) td:nth-child(4) { width: 21%; }
 
 
 .doc-table th {

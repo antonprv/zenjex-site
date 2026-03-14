@@ -279,9 +279,18 @@
 
 .doc-table {
   width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
   font-size: 0.82rem;
 }
+/* 3-column tables: first col wider, other two share remaining space */
+.doc-table th:first-child,
+.doc-table td:first-child { width: 42%; }
+.doc-table th:nth-child(2),
+.doc-table td:nth-child(2) { width: 26%; }
+.doc-table th:nth-child(3),
+.doc-table td:nth-child(3) { width: 32%; }
+
 
 .doc-table th {
   padding: 0.6rem 1rem;
